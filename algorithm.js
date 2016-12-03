@@ -6,7 +6,8 @@ function clip(lines, poly)
         addNormalsToScene(normals, poly);
         for(var i = 0; i < lines.length; i++)
         {
-            scene.innerLines[scene.innerLines.length] = Cyrus_Beck(lines[i], poly, normals);
+            var innerLine = Cyrus_Beck(lines[i], poly, normals);
+            if(innerLine) scene.innerLines[scene.innerLines.length] = innerLine;
         }
     }
     else alert("Polygon isn't convex");
@@ -19,25 +20,62 @@ function Cyrus_Beck(line, poly, normals)
 
     var P = function(t) { return [line[0] + (line[2] - line[0])*t, line[1] + (line[3] - line[1])*t]; }
     var D = [line[2]-line[0], line[3]-line[1]];
-
-    var upperLimits = new Array();
-    var lowerLimits = new Array();
-
-    for(var i = 0; i < normals.length; i++)
+    if(D[0]!=0 || D[1]!=0)
     {
-        var F = [poly[i*2], poly[i*2+1]];
-        var W = [P1[0]-F[0], P1[1]-F[1]];
-        var t = -(multiplyScalar(W, normals[i]))/(multiplyScalar(D, normals[i]));
-        if(0 <= t && t <= 1)
-        {
-            if(multiplyScalar(D, normals[i]) > 0) lowerLimits[lowerLimits.length] = t;
-            else upperLimits[upperLimits.length] = t; 
-        }
-    }
+        var upperLimits = new Array();
+        var lowerLimits = new Array();
 
-    P1 = P(Math.max.apply(null, lowerLimits));
-    P2 = P(Math.min.apply(null, upperLimits));
-    return [P1[0], P1[1], P2[0], P2[1]];
+        for(var i = 0; i < normals.length; i++)
+        {
+            var F = [poly[i*2], poly[i*2+1]];
+            var W = [P1[0]-F[0], P1[1]-F[1]];
+            var t = -(multiplyScalar(W, normals[i]))/(multiplyScalar(D, normals[i]));
+            if(0 <= t && t <= 1)
+            {
+                if(multiplyScalar(D, normals[i]) > 0) lowerLimits[lowerLimits.length] = t;
+                else upperLimits[upperLimits.length] = t; 
+            }
+        }
+
+        if(lowerLimits.length != 0 && upperLimits.length != 0)
+        {
+            var lowerLimit = Math.max.apply(null, lowerLimits);
+            var upperLimit = Math.min.apply(null, upperLimits);
+            if(lowerLimit < upperLimit)
+            {
+                P1 = P(lowerLimit);
+                P2 = P(upperLimit);
+            }
+            else return null;
+        }
+        else if(lowerLimits.length != 0 && upperLimits.length == 0)
+        {
+            P1 = P(Math.max.apply(null, lowerLimits));
+        }
+        else if(lowerLimits.length == 0 && upperLimits.length != 0)
+        {
+            P2 = P(Math.min.apply(null, upperLimits));
+        }
+        return [P1[0], P1[1], P2[0], P2[1]];
+    }
+    else return null;
+}
+
+function isOnEdge(dot, poly)
+{
+    for(var i = 0; i < poly.length; i+=2)
+    {
+        if(lineContainsDot([poly[i], poly[i+1], poly[(i+2)%poly.length], poly[(i+3)%poly.length]], dot))
+            return true;
+    }
+    return false;
+}
+function lineContainsDot(line, dot)
+{
+    var k = (line[3] - line[1]) / (line[2] - line[0]);
+    var b = line[1] - k * line[0];
+    if(k*dot[0] - dot[1] + b == 0) return true;
+    else return false;
 }
 
 //Returns array of unit normals to one of the poly's line segments 
