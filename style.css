@@ -1,0 +1,28 @@
+body, html{
+  width: 100%;
+  height: 100%;
+  padding: 0px;
+  margin: 0px;
+  background-color: lightgrey;
+  overflow: hidden;
+}
+canvas.fullScreenCanvas {
+  width: 500;
+  height: 500;
+  background-color: white;
+}
+div.startButton {
+  width: 300px;
+  padding: 30px;
+  font-size: 20px;
+  background-color: white;
+  position: fixed;
+  bottom: 10px;
+  left: 50%;
+  margin-left: -165px;
+  opacity: 0.9;
+  color: black;
+  font-weight: bold;
+  border: 3px solid black;
+  text-align: center;
+}
