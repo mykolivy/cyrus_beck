@@ -29,6 +29,9 @@ function Cyrus_Beck(line, poly, normals)
         {
             var F = [poly[i*2], poly[i*2+1]];
             var W = [P1[0]-F[0], P1[1]-F[1]];
+            var W2 = [P2[0]-F[0], P2[1]-F[1]];
+            //account for trivially invisible segments
+            if(multiplyScalar(W, normals[i]) < 0 && multiplyScalar(W2, normals[i])<0) return null;
             var t = -(multiplyScalar(W, normals[i]))/(multiplyScalar(D, normals[i]));
             if(0 <= t && t <= 1)
             {
