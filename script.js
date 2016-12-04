@@ -75,7 +75,10 @@ var scene = {
 		if(this.lines.length != 0) this.lines.forEach(drawLine);
 
 		gc.strokeStyle = "#00FF00";
-		if(this.visibleLines) this.visibleLines.forEach(drawLine);
+		if(this.visibleLines) this.visibleLines.forEach((w) => {
+			gc.strokeStyle = w.color;
+			drawLine(w.line);
+		});
 		
 		//if(newContents) newContents.forEach();
 		window.requestAnimationFrame(draw);
@@ -215,11 +218,12 @@ function clipAll()
 {
 	endWindowInput();
 	canvas.onclick = null;
+	var localVisibleLines = new Array();
 	for(var i = 0; i < scene.windows.length; i++)
 	{
 		scene.visibleLines = clip(scene.visibleLines,scene.windows[i], true);
-		scene.visibleLines = scene.visibleLines.concat(clip(scene.windows[i].contents, scene.windows[i], false));
-		scene.visibleLines = scene.visibleLines.concat(scene.windows[i].getBorderLines());
+		scene.visibleLines = scene.visibleLines.concat(clip(getColorizedLines(scene.windows[i].contents, scene.windows[i].color), scene.windows[i], false));
+		scene.visibleLines = scene.visibleLines.concat(getColorizedLines(scene.windows[i].getBorderLines(), scene.windows[i].color));
 	}
 	scene.lines = extractLines(scene.windows);
 	scene.windows = new Array();
@@ -229,5 +233,17 @@ function extractLines(windows)
 	var result = new Array();
 	for(var i = 0; i < windows.length;i++)
 		result = result.concat(windows[i].extractLines());
+	return result;
+}
+function getColorizedLines(lines, color)
+{
+	var result = new Array();
+	for(var i = 0; i < lines.length; i++) result[i] = {line: lines[i], color: color};
+	return result;
+}
+function getDecolorizedLines(lines)
+{
+	var result = new Array();
+	for(var i = 0; i < lines.length; i++) result[i] = lines[i].line;
 	return result;
 }

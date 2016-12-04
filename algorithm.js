@@ -12,9 +12,11 @@ function clip(lines, wnd, outside)
         }
         for(var i = 0; i < lines.length; i++)
         {
-            var generatedLines = Cyrus_Beck(lines[i], poly, normals, outside);
+            var generatedLines = Cyrus_Beck(lines[i].line, poly, normals, outside);
+            //Colorize result
+            for(var j = 0; j<generatedLines[0].length; j++) generatedLines[0][j] = {line: generatedLines[0][j], color: lines[i].color};
+            
             if(generatedLines[0]) result = result.concat(generatedLines[0]);
-            //if(generatedLines[1]) scene.invisibleLines = scene.invisibleLines.concat(generatedLines[1]);
         }
         return result;
     }
