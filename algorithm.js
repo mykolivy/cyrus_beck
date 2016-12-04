@@ -1,15 +1,22 @@
-function clip(lines, poly)
+function clip(lines, wnd, outside)
 {
+    var poly = wnd.polygon;
+    var result = new Array();
     if(isConvex(poly))
     {
         var normals = getInnerNormalsOfPoly(poly);
-        addNormalsToScene(normals, poly);
+        var middlePoints = getMiddlePointsOfPoly(poly);
+        for(var i = 0; i < middlePoints.length; i++)
+        {
+            wnd.normals[wnd.normals.length] = [middlePoints[i][0],middlePoints[i][1],middlePoints[i][0] + normals[i][0] * 10,middlePoints[i][1] + normals[i][1] * 10];
+        }
         for(var i = 0; i < lines.length; i++)
         {
-            var generatedLines = Cyrus_Beck(lines[i], poly, normals);
-            if(generatedLines[0]) scene.innerLines[scene.innerLines.length] = generatedLines[0];
-            if(generatedLines[1]) scene.invisibleLines = scene.invisibleLines.concat(generatedLines[1]);
+            var generatedLines = Cyrus_Beck(lines[i], poly, normals, outside);
+            if(generatedLines[0]) result = result.concat(generatedLines[0]);
+            //if(generatedLines[1]) scene.invisibleLines = scene.invisibleLines.concat(generatedLines[1]);
         }
+        return result;
     }
     else alert("Polygon isn't convex");
 }
@@ -17,11 +24,18 @@ function clip(lines, poly)
 //Returns array where
 //[0] = visible line (can be null or line)
 //[1] = array of invisible lines (length can be 0,1,2)
-function Cyrus_Beck(line, poly, normals)
+function Cyrus_Beck(line, poly, normals, outside)
 {
     var P1 = [line[0], line[1]];
     var P2 = [line[2], line[3]];
-    var result = [null, [[P1[0], P1[1], P2[0], P2[1]]]];
+    var oldLine = [P1[0], P1[1], P2[0], P2[1]];
+    var result = [new Array(), [oldLine]];
+    if(outside)
+    {
+        var temp = result[0];
+        result[0] = result[1];
+        result[1] = temp;
+    }
 
     var P = function(t) { return [line[0] + (line[2] - line[0])*t, line[1] + (line[3] - line[1])*t]; }
     var D = [line[2]-line[0], line[3]-line[1]];
@@ -67,9 +81,14 @@ function Cyrus_Beck(line, poly, normals)
             P2 = P(Math.min.apply(null, upperLimits));
             if(!isOnEdge(P2, poly)) return result;
         }
-        result[0] = [P1[0], P1[1], P2[0], P2[1]];
-        var oldLine = result[1][0];
+        result[0] = [[P1[0], P1[1], P2[0], P2[1]]];
         result[1] = [[oldLine[0], oldLine[1], P1[0], P1[1]], [oldLine[2], oldLine[3], P2[0], P2[1]]];
+        if(outside)
+        {
+            var temp = result[0];
+            result[0] = result[1];
+            result[1] = temp;
+        }
         return result;
     }
     else return result;
