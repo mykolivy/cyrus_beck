@@ -15,6 +15,13 @@ var lines = new Array();
 //Is an array of dots
 var clippingPoly;
 
+var colors = ["#EC644B","#F62459","#913D88","#336E7B","#1E824C"];
+var currentColor = 0;
+function getColor()
+{
+	return colors[(currentColor++)%colors.length];
+}
+
 class Window 
 {
 	//contents - array of lines
@@ -24,6 +31,7 @@ class Window
 		this.contents = contents ? contents : new Array();
 		this.polygon = polygon ? polygon : new Array();
 		this.normals = new Array();
+		this.color = "#000000";
 	}
 
 	getBorderLines()
@@ -36,10 +44,15 @@ class Window
 		}
 		return lines;
 	}
+
+	extractLines()
+	{
+		return this.contents.concat(this.getBorderLines());
+	}
 }
 
 var scene = {
-	lines: lines,
+	lines: new Array(),
 	windows: new Array(),
 	visibleLines: new Array(),
 	draw: function()
@@ -48,18 +61,18 @@ var scene = {
 		gc.clearRect(0, 0, canvas.offsetWidth, canvas.offsetHeight);
 		gc.fillRect(0, 0, canvas.offsetWidth, canvas.offsetHeight);
 
-		gc.strokeStyle = "#674172";
-		if(this.visibleLines) this.visibleLines.forEach(drawLine);
-
-		gc.strokeStyle = "#674172";
-		if(newContents) newContents.forEach(drawLine);
-
-		if(this.windows) this.windows.forEach((w) => {
+		if(this.windows.length != 0) this.windows.forEach((w) => {
+			gc.strokeStyle = w.color;
 			if(w.contents) w.contents.forEach(drawLine);
 			if(w.polygon) drawPoly(w.polygon);
 		});
 
+		gc.strokeStyle = newWindow.color;
 		if(newPolygon) drawLines(newPolygon);
+		if(newContents) newContents.forEach(drawLine);
+
+		gc.strokeStyle = "#95A5A6";
+		if(this.lines.length != 0) this.lines.forEach(drawLine);
 
 		gc.strokeStyle = "#00FF00";
 		if(this.visibleLines) this.visibleLines.forEach(drawLine);
@@ -178,6 +191,7 @@ function windowInput()
 {
 	if(newWindow) endWindowInput();
 	newWindow = new Window();
+	newWindow.color = getColor();
 	newContents = new Array();
 	canvas.onclick = null;
 	polygonInput();
@@ -186,6 +200,8 @@ function windowInput()
 function endWindowInput()
 {
 	if(newWindow && newWindow.polygon.length != 0) scene.windows[scene.windows.length] = newWindow;
+	newContents = new Array();
+	newPolygon = new Array();
 }
 
 function invertClipping()
@@ -205,4 +221,13 @@ function clipAll()
 		scene.visibleLines = scene.visibleLines.concat(clip(scene.windows[i].contents, scene.windows[i], false));
 		scene.visibleLines = scene.visibleLines.concat(scene.windows[i].getBorderLines());
 	}
+	scene.lines = extractLines(scene.windows);
+	scene.windows = new Array();
+}
+function extractLines(windows)
+{
+	var result = new Array();
+	for(var i = 0; i < windows.length;i++)
+		result = result.concat(windows[i].extractLines());
+	return result;
 }
