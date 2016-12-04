@@ -6,17 +6,22 @@ function clip(lines, poly)
         addNormalsToScene(normals, poly);
         for(var i = 0; i < lines.length; i++)
         {
-            var innerLine = Cyrus_Beck(lines[i], poly, normals);
-            if(innerLine) scene.innerLines[scene.innerLines.length] = innerLine;
+            var generatedLines = Cyrus_Beck(lines[i], poly, normals);
+            if(generatedLines[0]) scene.innerLines[scene.innerLines.length] = generatedLines[0];
+            if(generatedLines[1]) scene.invisibleLines = scene.invisibleLines.concat(generatedLines[1]);
         }
     }
     else alert("Polygon isn't convex");
 }
 
+//Returns array where
+//[0] = visible line (can be null or line)
+//[1] = array of invisible lines (length can be 0,1,2)
 function Cyrus_Beck(line, poly, normals)
 {
     var P1 = [line[0], line[1]];
     var P2 = [line[2], line[3]];
+    var result = [null, [[P1[0], P1[1], P2[0], P2[1]]]];
 
     var P = function(t) { return [line[0] + (line[2] - line[0])*t, line[1] + (line[3] - line[1])*t]; }
     var D = [line[2]-line[0], line[3]-line[1]];
@@ -31,7 +36,7 @@ function Cyrus_Beck(line, poly, normals)
             var W = [P1[0]-F[0], P1[1]-F[1]];
             var W2 = [P2[0]-F[0], P2[1]-F[1]];
             //account for trivially invisible segments
-            if(multiplyScalar(W, normals[i]) < 0 && multiplyScalar(W2, normals[i])<0) return null;
+            if(multiplyScalar(W, normals[i]) < 0 && multiplyScalar(W2, normals[i])<0) return result;
             var t = -(multiplyScalar(W, normals[i]))/(multiplyScalar(D, normals[i]));
             if(0 <= t && t <= 1)
             {
@@ -48,23 +53,26 @@ function Cyrus_Beck(line, poly, normals)
             {
                 P1 = P(lowerLimit);
                 P2 = P(upperLimit);
-                if(!isOnEdge(P1, poly) || !isOnEdge(P2, poly)) return null;
+                if(!isOnEdge(P1, poly) || !isOnEdge(P2, poly)) return result;
             }
-            else return null;
+            else return result;
         }
         else if(lowerLimits.length != 0 && upperLimits.length == 0)
         {
             P1 = P(Math.max.apply(null, lowerLimits));
-            if(!isOnEdge(P1, poly)) return null;
+            if(!isOnEdge(P1, poly)) return result;
         }
         else if(lowerLimits.length == 0 && upperLimits.length != 0)
         {
             P2 = P(Math.min.apply(null, upperLimits));
-            if(!isOnEdge(P2, poly)) return null;
+            if(!isOnEdge(P2, poly)) return result;
         }
-        return [P1[0], P1[1], P2[0], P2[1]];
+        result[0] = [P1[0], P1[1], P2[0], P2[1]];
+        var oldLine = result[1][0];
+        result[1] = [[oldLine[0], oldLine[1], P1[0], P1[1]], [oldLine[2], oldLine[3], P2[0], P2[1]]];
+        return result;
     }
-    else return null;
+    else return result;
 }
 
 function isOnEdge(dot, poly)
@@ -110,6 +118,15 @@ function getInnerNormalsOfPoly(poly)
         {
             normals[i] = multiplyByConst(normals[i], -1);
         }
+    return normals;
+}
+function getOuterNormalsOfPoly(poly)
+{
+    var normals = getInnerNormalsOfPoly(poly);
+    for(var i = 0; i < normals.length; i++)
+    {
+        normals[i] = multiplyByConst(normals[i], -1);
+    }
     return normals;
 }
 

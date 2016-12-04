@@ -18,6 +18,7 @@ var clippingPoly;
 var scene = {
 	lines: lines,
 	innerLines: new Array(),
+	invisibleLines: new Array(),
 	polygons: new Array(),
 	otherLines: new Array(),
 	draw: function()
@@ -34,6 +35,9 @@ var scene = {
 
 		gc.strokeStyle = "#00FF00";
 		if(this.innerLines) this.innerLines.forEach(drawLine);
+
+		gc.strokeStyle = "#0000FF";
+		if(this.invisibleLines) this.invisibleLines.forEach(drawLine);
 
 		gc.strokeStyle = "#674172";
 		if(clippingPoly) drawPoly(clippingPoly);
@@ -154,4 +158,11 @@ function addNormalsToScene(normals, poly)
     {
         scene.otherLines[scene.otherLines.length] = [middlePoints[i][0],middlePoints[i][1],middlePoints[i][0] + normals[i][0] * 10,middlePoints[i][1] + normals[i][1] * 10];
     }
+}
+
+function invertClipping()
+{
+	var temp = scene.innerLines;
+	scene.innerLines = scene.invisibleLines;
+	scene.invisibleLines = temp;
 }
