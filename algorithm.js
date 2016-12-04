@@ -45,16 +45,19 @@ function Cyrus_Beck(line, poly, normals)
             {
                 P1 = P(lowerLimit);
                 P2 = P(upperLimit);
+                if(!isOnEdge(P1, poly) || !isOnEdge(P2, poly)) return null;
             }
             else return null;
         }
         else if(lowerLimits.length != 0 && upperLimits.length == 0)
         {
             P1 = P(Math.max.apply(null, lowerLimits));
+            if(!isOnEdge(P1, poly)) return null;
         }
         else if(lowerLimits.length == 0 && upperLimits.length != 0)
         {
             P2 = P(Math.min.apply(null, upperLimits));
+            if(!isOnEdge(P2, poly)) return null;
         }
         return [P1[0], P1[1], P2[0], P2[1]];
     }
@@ -65,7 +68,7 @@ function isOnEdge(dot, poly)
 {
     for(var i = 0; i < poly.length; i+=2)
     {
-        if(lineContainsDot([poly[i], poly[i+1], poly[(i+2)%poly.length], poly[(i+3)%poly.length]], dot))
+        if(segmentContainsDot([poly[i], poly[i+1], poly[(i+2)%poly.length], poly[(i+3)%poly.length]], dot))
             return true;
     }
     return false;
@@ -74,8 +77,16 @@ function lineContainsDot(line, dot)
 {
     var k = (line[3] - line[1]) / (line[2] - line[0]);
     var b = line[1] - k * line[0];
-    if(k*dot[0] - dot[1] + b == 0) return true;
+    var value = Math.abs(k*dot[0] - dot[1] + b);
+    if(value == 0) return true;
     else return false;
+}
+function segmentContainsDot(segment, dot)
+{
+    var result = Math.min(segment[0], segment[2]) <= dot[0] && dot[0] <= Math.max(segment[0], segment[2]) &&
+                 Math.min(segment[1], segment[3]) <= dot[1] && dot[1] <= Math.max(segment[1], segment[3]);
+    //alert("dot: (" + dot[0]+";"+dot[1]+") | line: ("+segment[0]+";"+segment[1]+"), ("+segment[2]+";"+segment[3]+") Result: " + result);
+    return  result;
 }
 
 //Returns array of unit normals to one of the poly's line segments 
