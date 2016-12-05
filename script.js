@@ -15,7 +15,7 @@ var lines = new Array();
 //Is an array of dots
 var clippingPoly;
 
-var colors = ["#EC644B","#F62459","#913D88","#336E7B","#1E824C"];
+var colors = ["#EC644B","#913D88","#336E7B","#1E824C"];
 var currentColor = 0;
 function getColor()
 {
@@ -68,11 +68,12 @@ var scene = {
 		});
 
 		gc.strokeStyle = newWindow.color;
+		gc.fillStyle = newWindow.color;
 		if(newPolygon) drawLines(newPolygon);
 		if(newContents) newContents.forEach(drawLine);
 
 		gc.strokeStyle = "#95A5A6";
-		if(this.lines.length != 0) this.lines.forEach(drawLine);
+		//if(this.lines.length != 0) this.lines.forEach(drawLine);
 
 		gc.strokeStyle = "#00FF00";
 		if(this.visibleLines) this.visibleLines.forEach((w) => {
@@ -126,13 +127,20 @@ function drawLine(line)
 }
 function drawLines(poly)
 {
-	gc.beginPath();
-	gc.moveTo(poly[0],poly[1]);
 	for(var i = 2; i < poly.length-1; i+=2)
 	{
+		gc.beginPath();
+		gc.moveTo(poly[i-2],poly[i-1]);
 		gc.lineTo(poly[i], poly[i+1]);
+		gc.stroke();
+
+		gc.beginPath();
+		gc.arc(poly[i],poly[i+1],5,0,2*Math.PI);
+		gc.fill();
 	}
-	gc.stroke();
+	gc.beginPath();
+	gc.arc(poly[0],poly[1],5,0,2*Math.PI);
+	gc.fill();
 }
 function drawPoly(poly)
 {
@@ -161,6 +169,8 @@ function polygonInput()
 			{
 				canvas.onclick = null;
 				newWindow.polygon = newPolygon;
+				scene.windows[scene.windows.length] = newWindow;
+				newPolygon = new Array();
 				lineInput();
 			}
 			else
@@ -202,7 +212,6 @@ function windowInput()
 
 function endWindowInput()
 {
-	if(newWindow && newWindow.polygon.length != 0) scene.windows[scene.windows.length] = newWindow;
 	newContents = new Array();
 	newPolygon = new Array();
 }
