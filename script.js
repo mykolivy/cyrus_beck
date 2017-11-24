@@ -67,11 +67,6 @@ var scene = {
 			if(w.polygon) drawPoly(w.polygon);
 		});
 
-		gc.strokeStyle = newWindow.color;
-		gc.fillStyle = newWindow.color;
-		if(newPolygon) drawLines(newPolygon);
-		if(newContents) newContents.forEach(drawLine);
-
 		gc.strokeStyle = "#95A5A6";
 		//if(this.lines.length != 0) this.lines.forEach(drawLine);
 
@@ -80,6 +75,11 @@ var scene = {
 			gc.strokeStyle = w.color;
 			drawLine(w.line);
 		});
+
+		gc.strokeStyle = newWindow.color;
+		gc.fillStyle = newWindow.color;
+		if(newPolygon) drawLines(newPolygon);
+		if(newContents) newContents.forEach(drawLine);
 		
 		//if(newContents) newContents.forEach();
 		window.requestAnimationFrame(draw);

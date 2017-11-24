@@ -53,6 +53,7 @@ function Cyrus_Beck(line, poly, normals, outside)
             var W2 = [P2[0]-F[0], P2[1]-F[1]];
             //account for trivially invisible segments
             if(multiplyScalar(W, normals[i]) < 0 && multiplyScalar(W2, normals[i])<0) return result;
+
             var t = -(multiplyScalar(W, normals[i]))/(multiplyScalar(D, normals[i]));
             if(0 <= t && t <= 1)
             {
@@ -69,20 +70,11 @@ function Cyrus_Beck(line, poly, normals, outside)
             {
                 P1 = P(lowerLimit);
                 P2 = P(upperLimit);
-                if(!isOnEdge(P1, poly) || !isOnEdge(P2, poly)) return result;
             }
             else return result;
         }
-        else if(lowerLimits.length != 0 && upperLimits.length == 0)
-        {
-            P1 = P(Math.max.apply(null, lowerLimits));
-            if(!isOnEdge(P1, poly)) return result;
-        }
-        else if(lowerLimits.length == 0 && upperLimits.length != 0)
-        {
-            P2 = P(Math.min.apply(null, upperLimits));
-            if(!isOnEdge(P2, poly)) return result;
-        }
+        else if(lowerLimits.length != 0 && upperLimits.length == 0) P1 = P(Math.max.apply(null, lowerLimits));
+        else if(lowerLimits.length == 0 && upperLimits.length != 0) P2 = P(Math.min.apply(null, upperLimits));
         result[0] = [[P1[0], P1[1], P2[0], P2[1]]];
         result[1] = [[oldLine[0], oldLine[1], P1[0], P1[1]], [oldLine[2], oldLine[3], P2[0], P2[1]]];
         if(outside)
